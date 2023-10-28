@@ -14,9 +14,9 @@ ENABLE_LTO                       := 1
 ENABLE_UART                      := 1
 ENABLE_UART_DEBUG                := 0
 # AirCopy 2.5 kB
-ENABLE_AIRCOPY                   := 0
+ENABLE_AIRCOPY                   := 1
 ENABLE_AIRCOPY_REMEMBER_FREQ     := 1
-ENABLE_AIRCOPY_RX_REBOOT         := 0
+ENABLE_AIRCOPY_RX_REBOOT         := 1
 # FM Radio 4.2 kB
 ENABLE_FMRADIO_64_76             := 0
 ENABLE_FMRADIO_76_90             := 0
@@ -38,7 +38,7 @@ ENABLE_MDC1200                   := 1
 ENABLE_PWRON_PASSWORD            := 0
 ENABLE_RESET_AES_KEY             := 1
 ENABLE_BIG_FREQ                  := 0
-ENABLE_SMALL_BOLD                := 0
+ENABLE_SMALL_BOLD                := 1
 # trim trailing 0.044 kB
 ENABLE_TRIM_TRAILING_ZEROS       := 1
 ENABLE_KEEP_MEM_NAME             := 1
@@ -48,7 +48,7 @@ ENABLE_TX_WHEN_AM                := 1
 ENABLE_F_CAL_MENU                := 0
 ENABLE_TX_UNLOCK                 := 1
 ENABLE_CTCSS_TAIL_PHASE_SHIFT    := 1
-ENABLE_CONTRAST                  := 0
+ENABLE_CONTRAST                  := 1
 ENABLE_BOOT_BEEPS                := 0
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 1
 ENABLE_SHOW_CHARGE_LEVEL         := 1
@@ -74,7 +74,7 @@ ENABLE_TX_AUDIO_BAR              := 1
 # Side Button Menu 0.3 kB
 ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 0.4 kB
-ENABLE_KEYLOCK                   := 0
+ENABLE_KEYLOCK                   := 1
 #ENABLE_PANADAPTER               := 0
 #ENABLE_SINGLE_VFO_CHAN          := 0
 
