@@ -14,9 +14,9 @@ ENABLE_LTO                       := 1
 ENABLE_UART                      := 1
 ENABLE_UART_DEBUG                := 0
 # AirCopy 2.5 kB
-ENABLE_AIRCOPY                   := 1
+ENABLE_AIRCOPY                   := 0
 ENABLE_AIRCOPY_REMEMBER_FREQ     := 1
-ENABLE_AIRCOPY_RX_REBOOT         := 1
+ENABLE_AIRCOPY_RX_REBOOT         := 0
 # FM Radio 4.2 kB
 ENABLE_FMRADIO_64_76             := 0
 ENABLE_FMRADIO_76_90             := 0
@@ -74,7 +74,7 @@ ENABLE_TX_AUDIO_BAR              := 1
 # Side Button Menu 0.3 kB
 ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 0.4 kB
-ENABLE_KEYLOCK                   := 1
+ENABLE_KEYLOCK                   := 0
 #ENABLE_PANADAPTER               := 0
 #ENABLE_SINGLE_VFO_CHAN          := 0
 
