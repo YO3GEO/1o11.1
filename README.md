@@ -92,8 +92,19 @@ ENABLE_KEYLOCK                   := 1       enable keylock menu option + keylock
 #ENABLE_SINGLE_VFO_CHAN          := 0       not yet implemented - single VFO on display when possible
 ```
 
+First go into the hidden settings menu by power on while holding Sidekey 1 and PTT button together pushed. Make your frequency range settings under F Lock and the following settings in the menus.
+
+
 # New/modified function keys
 
+* 2 different Tone Burst 1050/1750 Hz: If TX 1750 Hz is enabled, config in menu on Side Key 1 or 2 sends a 1750 Hz Tone. Up to your config in sidekey menu.
+* 
+* The same side key button together with PTT sends a 1050 Hz Tone to demute 1050 Tone Squelch as by NOAA Freq channels table.
+* 
+* RX / TX from 15 MHz up to 1800 MHz for example testing SW AM receiption or usage as low pwr TX Freq Jammer. The BK4819 chip frequency limit from 630 MHz to 760 MHz range is excluded.
+* 
+* NOAA US weather Freq table replaced with the first 10 PMR channels with 1050 Hz Tone Squelch.
+  
 * Long-press 'M' .. Copy selected channel into same VFO, then switch VFO to frequency mode
 *
 * Long-press '7' .. Toggle selected channel scanlist setting .. if VOX  is disabled in Makefile
