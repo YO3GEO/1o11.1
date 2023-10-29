@@ -1,4 +1,4 @@
-# [OneOfEleven](https://github.com/OneOfEleven/uv-k5-firmware-custom) custom QSFW - Quansheng Custom Firmware with some optimizations.
+# [OneOfEleven](https://github.com/OneOfEleven/uv-k5-firmware-custom) custom OEFW - Quansheng Custom Firmware with fixes, optimizations, enhancements.
 ## [Download latest flashable Release builds](https://github.com/RE3CON/uv-k5-firmware-1o11/releases)
 # Open reimplementation of the Quan Sheng UV-K5 v2.1.27 firmware
 
