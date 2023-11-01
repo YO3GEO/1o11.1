@@ -12,7 +12,7 @@ ENABLE_OVERLAY                   := 0
 ENABLE_LTO                       := 1
 # UART Programming 2.9 kB
 ENABLE_UART                      := 1
-ENABLE_UART_DEBUG                := 1
+ENABLE_UART_DEBUG                := 0
 # AirCopy 2.5 kB
 ENABLE_AIRCOPY                   := 0
 ENABLE_AIRCOPY_REMEMBER_FREQ     := 1
@@ -29,11 +29,11 @@ ENABLE_NOAA                      := 0
 ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 # Tx on Voice 1.0 kB
-ENABLE_VOX                       := 0
-ENABLE_REDUCE_LOW_MID_TX_POWER   := 1
+ENABLE_VOX                       := 1
+ENABLE_REDUCE_LOW_MID_TX_POWER   := 0
 # Tx Alarm 600 B
 ENABLE_ALARM                     := 0
-ENABLE_TX1750                    := 0
+ENABLE_TX1750                    := 1
 # MDC1200 2.8 kB
 ENABLE_MDC1200                   := 0
 ENABLE_MDC1200_SHOW_OP_ARG       := 1
@@ -45,20 +45,20 @@ ENABLE_SMALL_BOLD                := 1
 # smallest font 2 kB
 ENABLE_SMALLEST_FONT             := 0
 # trim trailing 44 B
-ENABLE_TRIM_TRAILING_ZEROS       := 1
+ENABLE_TRIM_TRAILING_ZEROS       := 0
 ENABLE_KEEP_MEM_NAME             := 1
 ENABLE_WIDE_RX                   := 1
-ENABLE_TX_WHEN_AM                := 0
+ENABLE_TX_WHEN_AM                := 1
 # Freq calibration 188 B
 ENABLE_F_CAL_MENU                := 0
-ENABLE_TX_UNLOCK                 := 0
+ENABLE_TX_UNLOCK                 := 1
 ENABLE_CTCSS_TAIL_PHASE_SHIFT    := 1
-ENABLE_CONTRAST                  := 0
+ENABLE_CONTRAST                  := 1
 ENABLE_BOOT_BEEPS                := 0
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 1
 ENABLE_FLASH_LIGHT_SOS_TONE      := 1
-ENABLE_SHOW_CHARGE_LEVEL         := 0
-ENABLE_REVERSE_BAT_SYMBOL        := 1
+ENABLE_SHOW_CHARGE_LEVEL         := 1
+ENABLE_REVERSE_BAT_SYMBOL        := 0
 ENABLE_FREQ_SEARCH_TIMEOUT       := 1
 ENABLE_CODE_SEARCH_TIMEOUT       := 1
 # Kill and Revive 400 B
@@ -80,7 +80,7 @@ ENABLE_TX_AUDIO_BAR              := 1
 # Side Button Menu 300 B
 ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 400 B
-ENABLE_KEYLOCK                   := 0
+ENABLE_KEYLOCK                   := 1
 #ENABLE_PANADAPTER               := 0
 #ENABLE_SINGLE_VFO_CHAN          := 0
 
