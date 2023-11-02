@@ -54,8 +54,8 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: firmware.bin
-        asset_name: ${{ format('firmware.unpacked_{0}.bin', github.run_number) }}
-        tag: ${{ format('release-{0}', github.run_number) }}
+        asset_name: ${{ format('firmware.unpacked_v{0}.bin', github.run_number) }}
+        tag: ${{ format('release-v{0}', github.run_number) }}
         release_name: ${{ format('Release {0}, {1}', github.run_number, steps.date.outputs.date) }}
   
     - name: 'Add packed FW to release'
@@ -63,6 +63,6 @@ jobs:
       with:
         file: firmware_packed${{ github.event.release.tag_name }}.bin
         asset_name: ${{ format('firmware_packed_v{0}.bin', github.run_number) }}
-        tag: ${{ format('release-{0}', github.run_number) }}
+        tag: ${{ format('release-v{0}', github.run_number) }}
         release_name: ${{ format('Release {0}, {1}', github.run_number, steps.date.outputs.date) }}
 #created_at
