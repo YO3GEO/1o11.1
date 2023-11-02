@@ -1,9 +1,9 @@
 name: 'main'
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "release" ]
   pull_request:
-    branches: [ "main" ]    
+    branches: [ "release" ]    
 #    tags:
 #      - "v[0-9]+.[0-9]+.[0-9]+"
     
