@@ -1,6 +1,6 @@
 name: 'release'
 on:
-  create:
+  push:
     branches: [ "release" ]
   pull_request:
     branches: [ "release" ]    
