@@ -54,23 +54,12 @@
 
 		if (update_eeprom)
 		{
-			struct
-			{
-				int16_t  BK4819_XtalFreqLow;
-				uint16_t EEPROM_1F8A;
-				uint16_t EEPROM_1F8C;
-				uint8_t  volume_gain;
-				uint8_t  dac_gain;
-			} __attribute__((packed)) misc;
-
-			g_eeprom.config.setting.BK4819_xtal_freq_low = value;
+			g_eeprom.calib.bk4819_xtal_freq_low = value;
 
 			// radio 1 .. 04 00 46 00 50 00 2C 0E
 			// radio 2 .. 05 00 46 00 50 00 2C 0E
 			//
-			EEPROM_ReadBuffer(0x1F88, &misc, 8);
-			misc.BK4819_XtalFreqLow = value;
-			EEPROM_WriteBuffer8(0x1F88, &misc);
+			EEPROM_WriteBuffer8(0x1F88, &g_eeprom.calib.bk4819_xtal_freq_low);
 		}
 	}
 #endif
@@ -1330,11 +1319,11 @@ void MENU_ShowCurrentSetting(void)
 			g_sub_menu_selection = g_eeprom.config.setting.tx_enable;
 			break;
 
-#ifdef ENABLE_F_CAL_MENU
+		#ifdef ENABLE_F_CAL_MENU
 			case MENU_F_CALI:
-				g_sub_menu_selection = g_eeprom.config.setting.BK4819_xtal_freq_low;
+				g_sub_menu_selection = g_eeprom.calib.bk4819_xtal_freq_low;
 				break;
-#endif
+		#endif
 
 		case MENU_BAT_CAL:
 			g_sub_menu_selection = g_eeprom.calib.battery[3];
@@ -1433,6 +1422,11 @@ static void MENU_Key_0_to_9(key_code_t Key, bool key_pressed, bool key_held)
 	{
 		uint32_t Frequency;
 
+		NUMBER_Get(g_input_box, &Frequency);
+
+		if (g_input_box_index > 0)
+			g_sub_menu_selection = Frequency;
+
 		if (g_input_box_index < 8)
 		{	// not yet enough characters
 			#ifdef ENABLE_VOICE
@@ -1441,12 +1435,11 @@ static void MENU_Key_0_to_9(key_code_t Key, bool key_pressed, bool key_held)
 			return;
 		}
 
+		g_input_box_index = 0;
+
 		#ifdef ENABLE_VOICE
 			g_another_voice_id = (voice_id_t)Key;
 		#endif
-
-		NUMBER_Get(g_input_box, &Frequency);
-		g_input_box_index = 0;
 
 		#if defined(ENABLE_UART) && defined(ENABLE_UART_DEBUG)
 			UART_printf("offset 3 %u\r\n", Frequency);
@@ -1460,7 +1453,7 @@ static void MENU_Key_0_to_9(key_code_t Key, bool key_pressed, bool key_held)
 		#endif
 
 		#if defined(ENABLE_UART) && defined(ENABLE_UART_DEBUG)
-			UART_printf("offset 4 %u\r\n", Frequency);
+//			UART_printf("offset 4 %u\r\n", Frequency);
 		#endif
 		
 		g_sub_menu_selection = Frequency;
@@ -1575,9 +1568,9 @@ static void MENU_Key_EXIT(bool key_pressed, bool key_held)
 				g_input_box_index      = 0;
 				g_flag_refresh_menu    = true;
 
-#ifdef ENABLE_VOICE
+				#ifdef ENABLE_VOICE
 					g_another_voice_id = VOICE_ID_CANCEL;
-#endif
+				#endif
 			}
 			else
 				g_input_box[--g_input_box_index] = 10;
@@ -1588,9 +1581,9 @@ static void MENU_Key_EXIT(bool key_pressed, bool key_held)
 			return;
 		}
 
-#ifdef ENABLE_VOICE
+		#ifdef ENABLE_VOICE
 			g_another_voice_id = VOICE_ID_CANCEL;
-#endif
+		#endif
 
 		g_request_display_screen = DISPLAY_MAIN;
 
@@ -1604,9 +1597,9 @@ static void MENU_Key_EXIT(bool key_pressed, bool key_held)
 	{
 		MENU_stop_css_scan();
 
-#ifdef ENABLE_VOICE
+		#ifdef ENABLE_VOICE
 			g_another_voice_id   = VOICE_ID_SCANNING_STOP;
-#endif
+		#endif
 
 		g_request_display_screen = DISPLAY_MENU;
 	}
