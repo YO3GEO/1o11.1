@@ -27,8 +27,8 @@ uint32_t g_aircopy_freq = 41002500;
 const freq_band_table_t AIR_BAND = {10800000, 13600000};
 
 // the BK4819 has 2 bands it covers, 18MHz ~ 630MHz and 760MHz ~ 1300MHz
-const freq_band_table_t BX4819_BAND1 = { 1500000,  63000000};
-const freq_band_table_t BX4819_BAND2 = {76000000, 189950000};
+const freq_band_table_t BX4819_BAND1 = { 1400000,  66500000};
+const freq_band_table_t BX4819_BAND2 = {74500000, 189950000};
 
 const freq_band_table_t FREQ_BAND_TABLE[7] =
 {
@@ -213,7 +213,7 @@ int FREQUENCY_tx_freq_check(const uint32_t Frequency)
 		return 0;  // TX allowed in the airband
 
 	if (Frequency < FREQ_BAND_TABLE[0].lower || Frequency > FREQ_BAND_TABLE[ARRAY_SIZE(FREQ_BAND_TABLE) - 1].upper)
-		return -1;  // TX not allowed outside this range
+		return 0;  // -1; TX not allowed outside this range
 
 	switch (g_eeprom.config.setting.freq_lock)
 	{
