@@ -26,9 +26,9 @@ uint32_t g_aircopy_freq = 41002500;
 
 const freq_band_table_t AIR_BAND = {10800000, 13600000};
 
-// the BK4819 has 2 bands it covers, 18MHz ~ 630MHz and 760MHz ~ 1300MHz
-const freq_band_table_t BX4819_BAND1 = { 1500000,  63000000};
-const freq_band_table_t BX4819_BAND2 = {76000000, 185000000};
+// the BK4819 has 2 bands it covers, 18MHz ~ 660MHz and 760MHz ~ 1300MHz
+const freq_band_table_t BX4819_BAND1 = { 1500000,  66500000};
+const freq_band_table_t BX4819_BAND2 = {73500000, 189500000};
 
 const freq_band_table_t FREQ_BAND_TABLE[7] =
 {
