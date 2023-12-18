@@ -50,6 +50,9 @@ jobs:
  #    run: echo "::set-output name=date::$(date +'%A %d.%m.%Y %H:%M - %Z')" #>> $GITHUB_OUTPUT
  #    run: echo "::set-output name=date::$(date +'%Y-%m-%d')"  
       run: echo "date=$(date +'%A %d.%m.%Y %H:%M - %Z')" >> $GITHUB_OUTPUT
+      
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v4.0.0
 
     - name: 'Add unpacked FW to release'
       uses: svenstaro/upload-release-action@v2
