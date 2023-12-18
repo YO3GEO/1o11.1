@@ -69,58 +69,60 @@ void UI_GenerateChannelStringEx(char *pString, const char *prefix, const uint8_t
 		sprintf(pString + strlen(prefix), "%03u", ChannelNumber + 1);
 }
 
-void UI_PrintString(const char *str, unsigned int start, const unsigned int end, const unsigned int line, const unsigned int width)
+void UI_PrintString(const char *str, unsigned int x, const unsigned int end, const unsigned int line, const unsigned int width)
 {
-	const size_t length = strlen(str);
-	size_t i;
+	const unsigned int length    = strlen(str);
+	const unsigned int font_size = ARRAY_SIZE(g_font_big);
+	uint8_t           *f_buf1    = g_frame_buffer[line + 0];
+	uint8_t           *f_buf2    = g_frame_buffer[line + 1];
+	unsigned int       i;
 
-	if (end > start)
+	if (end > x)
 	{
-		const int ofs = ((int)(end - start) - (length * width) - 1) / 2;
-		if (ofs > 0 && (start + ofs) <= end)
-			start += ofs;
+		const int ofs = ((int)(end - x) - (length * width) - 1) / 2;
+		if (ofs > 0 && (x + ofs) <= end)
+			x += ofs;
 	}
 
-	for (i = 0; i < length; i++)
+//	for (i = 0; i < length && (x + width) <= LCD_WIDTH; i++, x += width)
+	for (i = 0; i < length; i++, x += width)
 	{
-		if (str[i] >= ' ' && str[i] < 127)
+		const int c = (int)str[i] - ' ';
+		if (c >= 0 && c < (int)font_size)
 		{
-			const unsigned int index = str[i] - ' ';
-			const unsigned int ofs   = start + (i * width);
-			memcpy(g_frame_buffer[line + 0] + ofs, &g_font_big[index][0], 8);
-			memcpy(g_frame_buffer[line + 1] + ofs, &g_font_big[index][8], 7);
+			memcpy(f_buf1 + x, &g_font_big[c][0], 8);
+			memcpy(f_buf2 + x, &g_font_big[c][8], 7);
 		}
 	}
 }
 
-void UI_print_string(
+static void UI_print_string(
 	const char        *str,
-	unsigned int       start,
+	unsigned int       x,
 	const unsigned int end,
 	const unsigned int line,
 	const uint8_t     *font,
 	const unsigned int font_size,
 	const unsigned int char_width)
 {
-	const unsigned int char_pitch = char_width + 1;
+	const unsigned int char_pitch = char_width + 1;  // char width + 1 pixel space between chars
 	const size_t       length     = strlen(str);
+	uint8_t           *f_buf      = g_frame_buffer[line];
 	unsigned int       i;
-	uint8_t           *f_buf;
 
-	if (end > start)
+	if (end > x)
 	{
-		const int ofs = ((int)(end - start) - (length * char_pitch) - 1) / 2;
-		if (ofs > 0 && (start + ofs) <= end)
-			start += ofs;
+		const int ofs = ((int)(end - x) - (length * char_pitch) - 1) / 2;
+		if (ofs > 0 && (x + ofs) <= end)
+			x += ofs;
 	}
 
-	f_buf = g_frame_buffer[line] + start;
-
-	for (i = 0; i < length; i++)
+	for (i = 0; i < length && (x + char_width) <= LCD_WIDTH; i++, x += char_pitch)
+//	for (i = 0; i < length; i++, x += char_pitch)
 	{
 		const int c = (int)str[i] - ' ';
 		if (c >= 0 && c < (int)font_size)
-			memcpy(f_buf + (char_pitch * i), font + (char_width * c), char_width);
+			memcpy(f_buf + x, font + (char_width * c), char_width);
 	}
 }
 
@@ -203,13 +205,12 @@ void UI_PrintStringSmallBuffer(const char *pString, uint8_t *buffer)
 	}
 }
 
-void UI_DisplayFrequency(const char *pDigits, uint8_t X, uint8_t Y, bool bDisplayLeadingZero, bool flag)
+void UI_DisplayFrequencyBig(const char *pDigits, uint8_t X, uint8_t Y, bool bDisplayLeadingZero, bool flag, unsigned int length)
 {
 	const unsigned int char_width  = 13;
 	uint8_t           *pFb0        = g_frame_buffer[Y] + X;
-	uint8_t           *pFb1        = pFb0 + 128;
+	uint8_t           *pFb1        = pFb0 + LCD_WIDTH;
 	bool               bCanDisplay = false;
-	unsigned int       len         = 6;
 	unsigned int       i           = 0;
 
 	// MHz
@@ -238,19 +239,22 @@ void UI_DisplayFrequency(const char *pDigits, uint8_t X, uint8_t Y, bool bDispla
 	*pFb1 = 0x60; pFb0++; pFb1++;
 
 #ifdef ENABLE_TRIM_TRAILING_ZEROS
-	if (pDigits[len + 1] == 0 && pDigits[len + 2] == 0)
+	if (length == 6)
 	{
-		if (pDigits[len - 1] == 0)
+		if (pDigits[length + 1] == 0 && pDigits[length + 2] == 0)
 		{
-			len--;
-			if (pDigits[len - 1] == 0)
-				len--;
+			if (pDigits[length - 1] == 0)
+			{
+				length--;
+				if (pDigits[length - 1] == 0)
+					length--;
+			}
 		}
 	}
 #endif
 
-	// kHz
-	while (i < len)
+	// fractions
+	while (i < length)
 	{
 		const unsigned int Digit = pDigits[i++];
 		memcpy(pFb0, g_font_big_digits[Digit],              char_width);
@@ -258,6 +262,43 @@ void UI_DisplayFrequency(const char *pDigits, uint8_t X, uint8_t Y, bool bDispla
 		pFb0 += char_width;
 		pFb1 += char_width;
 	}
+}
+
+void UI_DisplayFrequency(const char *pDigits, uint8_t X, uint8_t Y, bool bDisplayLeadingZero, unsigned int length)
+{
+	char         str[10];
+	bool         bCanDisplay = false;
+	unsigned int i           = 0;
+	unsigned int k           = 0;
+
+	// MHz
+	while (i < 3)
+	{
+		const unsigned int Digit = pDigits[i++];
+		if (bDisplayLeadingZero || bCanDisplay || Digit > 0)
+		{
+			bCanDisplay = true;
+			str[k++] = (Digit < 10) ? '0' + Digit : '_';
+		}
+	}
+
+	// decimal point
+	str[k++] = '.';
+
+	// fractions
+	while (i < length)
+	{
+		const unsigned int Digit = pDigits[i++];
+		str[k++] = (Digit < 10) ? '0' + Digit : '_';
+	}
+
+	str[k] = '\0';
+
+#ifdef ENABLE_TRIM_TRAILING_ZEROS
+//	NUMBER_trim_trailing_zeros(str);
+#endif
+
+	UI_PrintString(str, X, 0, Y, 8);
 }
 
 void UI_DisplayFrequencySmall(const char *pDigits, uint8_t X, uint8_t Y, bool bDisplayLeadingZero)

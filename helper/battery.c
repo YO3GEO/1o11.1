@@ -17,11 +17,11 @@
 #include "battery.h"
 #include "driver/backlight.h"
 #include "misc.h"
+#include "settings.h"
 #include "ui/battery.h"
 #include "ui/menu.h"
 #include "ui/ui.h"
 
-uint16_t          g_battery_calibration[6];
 uint16_t          g_usb_current_voltage;
 uint16_t          g_usb_current;
 uint16_t          g_battery_voltages[4];
@@ -83,28 +83,20 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 {
 	const uint8_t  PreviousBatteryLevel = g_battery_display_level;
 	const uint16_t Voltage              = (g_battery_voltages[0] + g_battery_voltages[1] + g_battery_voltages[2] + g_battery_voltages[3]) / 4;
+	unsigned int   i;
 
 	g_battery_display_level = 0;
 
-	if (g_battery_calibration[5] < Voltage)
-		g_battery_display_level = 6;
-	else
-	if (g_battery_calibration[4] < Voltage)
-		g_battery_display_level = 5;
-	else
-	if (g_battery_calibration[3] < Voltage)
-		g_battery_display_level = 4;
-	else
-	if (g_battery_calibration[2] < Voltage)
-		g_battery_display_level = 3;
-	else
-	if (g_battery_calibration[1] < Voltage)
-		g_battery_display_level = 2;
-	else
-	if (g_battery_calibration[0] < Voltage)
-		g_battery_display_level = 1;
+	for (i = ARRAY_SIZE(g_eeprom.calib.battery); i > 0; i--)
+	{
+		if (g_eeprom.calib.battery[i - 1] < Voltage)
+		{
+			g_battery_display_level = i;
+			break;
+		}
+	}
 
-	g_battery_voltage_average = (Voltage * 760) / g_battery_calibration[3];
+	g_battery_voltage_average = (Voltage * 760) / g_eeprom.calib.battery[3];
 
 	if ((g_current_display_screen == DISPLAY_MENU) && g_menu_cursor == MENU_VOLTAGE)
 		g_update_display = true;
@@ -125,7 +117,7 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 		{
 			g_update_status  = true;
 			g_update_display = true;
-			backlight_turn_on(0);
+			BACKLIGHT_turn_on(0);
 		}
 
 		g_charging_with_type_c = true;
