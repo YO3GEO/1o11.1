@@ -44,19 +44,20 @@
 //  payloads ................ 0xABCD + 2 byte eeprom address + 64 byte payload + 2 byte CRC + 0xDCBA
 //  1of11 req/ack additon ... 0xBCDA + 2 byte eeprom address +                   2 byte CRC + 0xCDBA
 
-#define AIRCOPY_MAGIC_START_REQ    0xBCDA   // used to request a block resend
-#define AIRCOPY_MAGIC_END_REQ      0xCDBA   // used to request a block resend
+#define AIRCOPY_MAGIC_START_REQ      0xBCDA   // used to request a block resend
+#define AIRCOPY_MAGIC_END_REQ        0xCDBA   // used to request a block resend
 
-#define AIRCOPY_MAGIC_START        0xABCD   // normal start value
-#define AIRCOPY_MAGIC_END          0xDCBA   // normal end   value
+#define AIRCOPY_MAGIC_START          0xABCD   // normal start value
+#define AIRCOPY_MAGIC_END            0xDCBA   // normal end   value
 
-#define AIRCOPY_LAST_EEPROM_ADDR   0x1E00   // size of eeprom transferred
+#define AIRCOPY_LAST_EEPROM_ADDR     0x1E00                 // size of eeprom transferred
+//#define AIRCOPY_LAST_EEPROM_ADDR   (sizeof(t_config))     //
 
 // FSK payload data length
-#define AIRCOPY_DATA_PACKET_SIZE   (2 + 2 + 64 + 2 + 2)
+#define AIRCOPY_DATA_PACKET_SIZE     (2 + 2 + 64 + 2 + 2)
 
 // FSK req/ack data length .. 0xBCDA + 2 byte eeprom address + 2 byte CRC + 0xCDBA
-#define AIRCOPY_REQ_PACKET_SIZE    (2 + 2 + 2 + 2)
+#define AIRCOPY_REQ_PACKET_SIZE      (2 + 2 + 2 + 2)
 
 // **********************
 
@@ -114,6 +115,7 @@ void AIRCOPY_start_fsk_tx(const int request_block_num)
 	if (request_block_num < 0)
 	{
 		EEPROM_ReadBuffer(eeprom_addr, &g_fsk_buffer[tx_size], 64);
+//		memcpy(&g_fsk_buffer[tx_size], ((uint8_t *)&g_eeprom) + eeprom_addr, 64);
 		tx_size += 64 / 2;
 	}
 
@@ -162,7 +164,7 @@ void AIRCOPY_start_fsk_tx(const int request_block_num)
 	//          0 = enable
 	//          1 = disable
 	//
-//	BK4819_WriteRegister(0x2B, (1u << 2) | (1u << 0));  // try to improve the TX waveform
+//	BK4819_write_reg(0x2B, (1u << 2) | (1u << 0));  // try to improve the TX waveform
 
 	// REG_59
 	//
@@ -216,21 +218,21 @@ void AIRCOPY_start_fsk_tx(const int request_block_num)
 				(0u <<  0);    // 0 ~ 7    ???
 
 	// set the packet size
-	BK4819_WriteRegister(0x5D, (((tx_size * 2) - 1) << 8));
+	BK4819_write_reg(0x5D, (((tx_size * 2) - 1) << 8));
 
 	// clear TX fifo
-	BK4819_WriteRegister(0x59, (1u << 15) | fsk_reg59);
-	BK4819_WriteRegister(0x59, fsk_reg59);
+	BK4819_write_reg(0x59, (1u << 15) | fsk_reg59);
+	BK4819_write_reg(0x59, fsk_reg59);
 
 	// load the packet
 	for (k = 0; k < tx_size; k++)
-		BK4819_WriteRegister(0x5F, g_fsk_buffer[k]);
+		BK4819_write_reg(0x5F, g_fsk_buffer[k]);
 
 	// enable tx interrupt(s)
-	BK4819_WriteRegister(0x3F, BK4819_REG_3F_FSK_TX_FINISHED);
+	BK4819_write_reg(0x3F, BK4819_REG_3F_FSK_TX_FINISHED);
 
 	// enable scramble, enable TX
-	BK4819_WriteRegister(0x59, (1u << 13) | (1u << 11) | fsk_reg59);
+	BK4819_write_reg(0x59, (1u << 13) | (1u << 11) | fsk_reg59);
 }
 
 void AIRCOPY_stop_fsk_tx(void)
@@ -248,7 +250,7 @@ void AIRCOPY_stop_fsk_tx(void)
 	BK4819_reset_fsk();
 
 	// restore TX/RX filtering
-	BK4819_WriteRegister(0x2B, 0);
+	BK4819_write_reg(0x2B, 0);
 
 	if (g_aircopy_state == AIRCOPY_TX)
 	{
@@ -301,10 +303,10 @@ void AIRCOPY_process_fsk_tx_10ms(void)
 
 	if (--g_fsk_tx_timeout_10ms > 0)
 	{	// still TX'ing
-		if ((BK4819_ReadRegister(0x0C) & (1u << 0)) == 0)
+		if ((BK4819_read_reg(0x0C) & (1u << 0)) == 0)
 			return;
-		BK4819_WriteRegister(0x02, 0);
-		interrupt_bits = BK4819_ReadRegister(0x02);
+		BK4819_write_reg(0x02, 0);
+		interrupt_bits = BK4819_read_reg(0x02);
 		if ((interrupt_bits & BK4819_REG_02_FSK_TX_FINISHED) == 0)
 			return;            // TX not yet finished
 	}
@@ -334,7 +336,7 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 	uint16_t           crc1;
 	uint16_t           crc2;
 	uint16_t           eeprom_addr;
-	uint16_t          *data;
+	uint8_t           *data;
 	unsigned int       block_num;
 	bool               req_ack_packet = false;
 	unsigned int       i;
@@ -376,7 +378,7 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 	//
 	// <2:0> 0 ???
 	//
-	status = BK4819_ReadRegister(0x59);
+	status = BK4819_read_reg(0x59);
 
 	if (status & (1u << 11) || g_fsk_tx_timeout_10ms > 0)
 		return;   // FSK TX is busy
@@ -388,13 +390,13 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 		BK4819_start_aircopy_fsk_rx((g_aircopy_state == AIRCOPY_TX) ? AIRCOPY_REQ_PACKET_SIZE : AIRCOPY_DATA_PACKET_SIZE);
 	}
 
-	status = BK4819_ReadRegister(0x0C);
+	status = BK4819_read_reg(0x0C);
 	if ((status & (1u << 0)) == 0)
 		return;                                                // no flagged interrupts
 
 	// read the interrupt flags
-	BK4819_WriteRegister(0x02, 0);                             // clear them
-	interrupt_bits = BK4819_ReadRegister(0x02);
+	BK4819_write_reg(0x02, 0);                             // clear them
+	interrupt_bits = BK4819_read_reg(0x02);
 
 	if (interrupt_bits & BK4819_REG_02_FSK_RX_SYNC)
 		BK4819_set_GPIO_pin(BK4819_GPIO6_PIN2_GREEN, true);    // LED on
@@ -408,10 +410,10 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 	BK4819_set_GPIO_pin(BK4819_GPIO6_PIN2_GREEN, true);        // LED on
 
 	{	// fetch RX'ed data
-		const unsigned int count = BK4819_ReadRegister(0x5E) & (7u << 0); // almost full threshold
+		const unsigned int count = BK4819_read_reg(0x5E) & (7u << 0); // almost full threshold
 		for (i = 0; i < count; i++)
 		{
-			const uint16_t word = BK4819_ReadRegister(0x5F);
+			const uint16_t word = BK4819_read_reg(0x5F);
 
 			if (g_fsk_write_index < ARRAY_SIZE(g_fsk_buffer))
 				g_fsk_buffer[g_fsk_write_index++] = word;
@@ -436,7 +438,7 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 	//
 	// <3:0>   ???
 	//
-	status = BK4819_ReadRegister(0x0B);
+	status = BK4819_read_reg(0x0B);
 
 	// check to see if it's a REQ/ACK packet
 	if (g_fsk_write_index == req_ack_size)
@@ -503,8 +505,8 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 		return;
 	}
 
-	eeprom_addr =  g_fsk_buffer[1];
-	data        = &g_fsk_buffer[2];
+	eeprom_addr = g_fsk_buffer[1];
+	data        = (uint8_t *)&g_fsk_buffer[2];
 
 	block_num = eeprom_addr / block_size;
 
@@ -589,7 +591,11 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 			data[2] = 0;
 		}
 
-		EEPROM_WriteBuffer8(eeprom_addr, data);   // 8 bytes at a time
+		if (eeprom_addr < sizeof(t_config))		// don't allow writing to the calibration data area
+		{
+			EEPROM_WriteBuffer8(eeprom_addr, data);   // 8 bytes at a time
+//			memcpy(((uint8_t *)&g_eeprom) + eeprom_addr, data, 8);
+		}
 
 		data        += write_size / sizeof(data[0]);
 		eeprom_addr += write_size;
@@ -603,6 +609,9 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 		g_aircopy_state  = AIRCOPY_RX_COMPLETE;
 		AUDIO_PlayBeep(BEEP_880HZ_60MS_TRIPLE_BEEP);
 
+		// save the received data to the EEPROM chip
+//		SETTINGS_write_eeprom_config();
+
 		#ifdef ENABLE_AIRCOPY_RX_REBOOT
 			#if defined(ENABLE_OVERLAY)
 				overlay_FLASH_RebootToBootloader();
@@ -611,9 +620,9 @@ void AIRCOPY_process_fsk_rx_10ms(void)
 			#endif
 		#endif
 	}
-	
+
 	return;
-	
+
 send_req:
 	g_fsk_write_index = 0;
 
@@ -627,10 +636,10 @@ send_req:
 	while (g_fsk_tx_timeout_10ms-- > 0)
 	{
 		SYSTEM_DelayMs(5);
-		if (BK4819_ReadRegister(0x0C) & (1u << 0))
+		if (BK4819_read_reg(0x0C) & (1u << 0))
 		{	// we have interrupt flags
-			BK4819_WriteRegister(0x02, 0);
-			const uint16_t interrupt_bits = BK4819_ReadRegister(0x02);
+			BK4819_write_reg(0x02, 0);
+			const uint16_t interrupt_bits = BK4819_read_reg(0x02);
 			if (interrupt_bits & BK4819_REG_02_FSK_TX_FINISHED)
 				g_fsk_tx_timeout_10ms = 0;       // TX is complete
 		}
@@ -662,6 +671,8 @@ static void AIRCOPY_Key_DIGITS(key_code_t Key, bool key_pressed, bool key_held)
 
 		INPUTBOX_append(Key);
 
+		NUMBER_Get(g_input_box, &Frequency);
+
 		g_request_display_screen = DISPLAY_AIRCOPY;
 
 		if (g_input_box_index < 6)
@@ -674,8 +685,6 @@ static void AIRCOPY_Key_DIGITS(key_code_t Key, bool key_pressed, bool key_held)
 
 		g_input_box_index = 0;
 
-		NUMBER_Get(g_input_box, &Frequency);
-
 		for (i = 0; i < ARRAY_SIZE(FREQ_BAND_TABLE); i++)
 		{
 			if (Frequency >= FREQ_BAND_TABLE[i].lower && Frequency < FREQ_BAND_TABLE[i].upper)
@@ -684,7 +693,7 @@ static void AIRCOPY_Key_DIGITS(key_code_t Key, bool key_pressed, bool key_held)
 					g_another_voice_id = (voice_id_t)Key;
 				#endif
 
-				g_rx_vfo->band = i;
+				g_rx_vfo->channel_attributes.band = i;
 
 				// round the frequency to nearest step size
 				Frequency = ((Frequency + (g_rx_vfo->step_freq / 2)) / g_rx_vfo->step_freq) * g_rx_vfo->step_freq;
@@ -696,7 +705,8 @@ static void AIRCOPY_Key_DIGITS(key_code_t Key, bool key_pressed, bool key_held)
 
 				g_rx_vfo->freq_config_rx.frequency = Frequency;
 				g_rx_vfo->freq_config_tx.frequency = Frequency;
-				RADIO_ConfigureSquelchAndOutputPower(g_rx_vfo);
+				RADIO_ConfigureSquelch(g_rx_vfo);
+//				RADIO_ConfigureTXPower(g_rx_vfo);
 
 				g_current_vfo = g_rx_vfo;
 
@@ -830,6 +840,7 @@ void AIRCOPY_process_key(key_code_t Key, bool key_pressed, bool key_held)
 		case KEY_EXIT:
 			AIRCOPY_Key_EXIT(key_pressed, key_held);
 			break;
+//		case KEY_PTT:
 		default:
 			break;
 	}

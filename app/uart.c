@@ -36,6 +36,7 @@
 #endif
 #include "functions.h"
 #include "misc.h"
+#include "radio.h"
 #include "settings.h"
 #if defined(ENABLE_OVERLAY)
 	#include "sram-overlay.h"
@@ -210,7 +211,7 @@ static void SendVersion(void)
 	reply.Header.ID               = 0x0515;
 	reply.Header.Size             = sizeof(reply.Data);
 	memcpy(reply.Data.Version, Version_str, slen);
-	reply.Data.has_custom_aes_key = g_has_custom_aes_key;
+	reply.Data.has_custom_aes_key = g_has_aes_key;
 	reply.Data.password_locked    = g_password_locked;
 	reply.Data.Challenge[0]       = g_challenge[0];
 	reply.Data.Challenge[1]       = g_challenge[1];
@@ -285,11 +286,12 @@ static void cmd_051B(const uint8_t *pBuffer)
 	reply.Data.Offset = addr;
 	reply.Data.Size   = size;
 
-//	if (g_has_custom_aes_key)
+//	if (g_has_aes_key)
 //		locked = is_locked;
 
 //	if (!locked)
-		EEPROM_ReadBuffer(addr, reply.Data.Data, size);
+//		EEPROM_ReadBuffer(addr, reply.Data.Data, size);
+		memcpy(reply.Data.Data, ((uint8_t *)&g_eeprom) + addr, size);
 
 	SendReply(&reply, size + 8);
 }
@@ -303,7 +305,7 @@ static void cmd_051D(const uint8_t *pBuffer)
 	unsigned int       size          = pCmd->Size;
 #ifdef INCLUDE_AES
 	bool               reload_eeprom = false;
-	bool               locked        = g_has_custom_aes_key ? is_locked : g_has_custom_aes_key;
+	bool               locked        = g_has_aes_key ? is_locked : g_has_aes_key;
 #endif
 	reply_051D_t       reply;
 
@@ -346,11 +348,11 @@ static void cmd_051D(const uint8_t *pBuffer)
 					if (!is_locked)
 						reload_eeprom = true;
 			#else
-				if (Offset == 0x0F30)
+				if (Offset == 0x0F30 || Offset == 0x0F38)
 					memset(data, 0xff, 8);   // wipe the AES key
 			#endif
 
-			//#ifndef ENABLE_KILL_REVIVE
+			//#ifndef ENABLE_DTMF_KILL_REVIVE
 				if (Offset == 0x0F40)
 				{	// killed flag is here
 					data[2] = false;	// remove it
@@ -369,7 +371,7 @@ static void cmd_051D(const uint8_t *pBuffer)
 
 		#ifdef INCLUDE_AES
 			if (reload_eeprom)
-				BOARD_eeprom_load();
+				SETTINGS_read_eeprom();
 		#endif
 	}
 
@@ -384,9 +386,9 @@ static void cmd_0527(void)
 	memset(&reply, 0, sizeof(reply));
 	reply.Header.ID             = 0x0528;
 	reply.Header.Size           = sizeof(reply.Data);
-	reply.Data.RSSI             = BK4819_ReadRegister(0x67) & 0x01FF;
-	reply.Data.ExNoiseIndicator = BK4819_ReadRegister(0x65) & 0x007F;
-	reply.Data.GlitchIndicator  = BK4819_ReadRegister(0x63);
+	reply.Data.RSSI             = BK4819_read_reg(0x67) & 0x01FF;
+	reply.Data.ExNoiseIndicator = BK4819_read_reg(0x65) & 0x007F;
+	reply.Data.GlitchIndicator  = BK4819_read_reg(0x63);
 
 	SendReply(&reply, sizeof(reply));
 }
@@ -412,7 +414,7 @@ static void cmd_0529(void)
 static void cmd_052D(const uint8_t *pBuffer)
 {
 	cmd_052D_t  *pCmd   = (cmd_052D_t *)pBuffer;
-	bool         locked = g_has_custom_aes_key;
+	bool         locked = g_has_aes_key;
 	uint32_t     response[4];
 	reply_052D_t reply;
 
@@ -420,8 +422,10 @@ static void cmd_052D(const uint8_t *pBuffer)
 
 	if (!locked)
 	{
+		uint32_t aes_key[4];
 		memcpy((void *)&response, &pCmd->Response, sizeof(response));    // overcome strict compiler warning settings
-		locked = IsBadChallenge(g_custom_aes_key, g_challenge, response);
+		memcpy(aes_key, g_eeprom.config.setting.aes_key, sizeof(aes_key));
+		locked = IsBadChallenge(aes_key, g_challenge, response);
 	}
 
 	if (!locked)
@@ -459,21 +463,21 @@ static void cmd_052F(const uint8_t *pBuffer)
 {
 	const cmd_052F_t *pCmd = (const cmd_052F_t *)pBuffer;
 
-	g_eeprom.dual_watch                       = DUAL_WATCH_OFF;
-	g_eeprom.cross_vfo_rx_tx                  = CROSS_BAND_OFF;
-	g_eeprom.rx_vfo                           = 0;
-	g_eeprom.dtmf_side_tone                   = false;
-	g_eeprom.vfo_info[0].frequency_reverse    = false;
-	g_eeprom.vfo_info[0].p_rx                  = &g_eeprom.vfo_info[0].freq_config_rx;
-	g_eeprom.vfo_info[0].p_tx                  = &g_eeprom.vfo_info[0].freq_config_tx;
-	g_eeprom.vfo_info[0].tx_offset_freq_dir   = TX_OFFSET_FREQ_DIR_OFF;
-	g_eeprom.vfo_info[0].dtmf_ptt_id_tx_mode  = PTT_ID_OFF;
-	g_eeprom.vfo_info[0].dtmf_decoding_enable = false;
+	g_rx_vfo_num                               = 0;
+	g_eeprom.config.setting.dual_watch         = DUAL_WATCH_OFF;
+	g_eeprom.config.setting.cross_vfo          = CROSS_BAND_OFF;
+	g_eeprom.config.setting.dtmf.side_tone     = false;
+	g_vfo_info[0].channel.frequency_reverse    = false;
+	g_vfo_info[0].p_rx                         = &g_vfo_info[0].freq_config_rx;
+	g_vfo_info[0].p_tx                         = &g_vfo_info[0].freq_config_tx;
+	g_vfo_info[0].channel.tx_offset_dir        = TX_OFFSET_FREQ_DIR_OFF;
+	g_vfo_info[0].channel.dtmf_ptt_id_tx_mode  = PTT_ID_OFF;
+	g_vfo_info[0].channel.dtmf_decoding_enable = false;
 
 	g_serial_config_tick_500ms = serial_config_tick_500ms;
 
 	#ifdef ENABLE_NOAA
-		g_is_noaa_mode = false;
+		g_noaa_mode = false;
 	#endif
 
 	if (g_current_function == FUNCTION_POWER_SAVE)

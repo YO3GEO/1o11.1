@@ -56,10 +56,10 @@ void GENERIC_Key_F(bool key_pressed, bool key_held)
 		{	// toggle the keyboad lock
 
 			#ifdef ENABLE_VOICE
-				g_another_voice_id = g_eeprom.key_lock ? VOICE_ID_UNLOCK : VOICE_ID_LOCK;
+				g_another_voice_id = g_eeprom.config.setting.key_lock ? VOICE_ID_UNLOCK : VOICE_ID_LOCK;
 			#endif
 
-			g_eeprom.key_lock       = !g_eeprom.key_lock;
+			g_eeprom.config.setting.key_lock = (g_eeprom.config.setting.key_lock + 1) & 1u;
 			g_request_save_settings = true;
 			g_update_status         = true;
 
@@ -99,7 +99,11 @@ void GENERIC_Key_PTT(bool key_pressed)
 {
 	g_input_box_index = 0;
 
+#if defined(ENABLE_UART)
 	if (!key_pressed || g_serial_config_tick_500ms > 0)
+#else
+	if (!key_pressed)
+#endif
 	{	// PTT released
 
 		if (g_current_function == FUNCTION_TRANSMIT)
@@ -113,16 +117,16 @@ void GENERIC_Key_PTT(bool key_pressed)
 			{
 				APP_end_tx();
 
-				if (g_eeprom.repeater_tail_tone_elimination == 0)
+				if (g_eeprom.config.setting.repeater_tail_tone_elimination == 0)
 					FUNCTION_Select(FUNCTION_FOREGROUND);
 				else
-					g_rtte_count_down = g_eeprom.repeater_tail_tone_elimination * 10;
+					g_rtte_count_down = g_eeprom.config.setting.repeater_tail_tone_elimination * 10;
 			}
 
 			g_flag_end_tx = false;
 
 			#ifdef ENABLE_VOX
-				g_vox_noise_detected = false;
+				g_vox_audio_detected = false;
 			#endif
 
 			RADIO_set_vfo_state(VFO_STATE_NORMAL);
@@ -147,7 +151,7 @@ void GENERIC_Key_PTT(bool key_pressed)
 
 		if (g_current_display_screen == DISPLAY_SEARCH)
 		{	// CTCSS/CDCSS scanning .. stop
-			g_eeprom.cross_vfo_rx_tx = g_backup_cross_vfo_rx_tx;
+			g_eeprom.config.setting.cross_vfo = g_backup_cross_vfo;
 			g_search_flag_stop_scan  = true;
 			g_vfo_configure_mode     = VFO_CONFIGURE_RELOAD;
 			g_flag_reset_vfos        = true;
@@ -209,28 +213,37 @@ void GENERIC_Key_PTT(bool key_pressed)
 		if (g_dtmf_input_box_index < sizeof(g_dtmf_input_box))
 			g_dtmf_input_box[g_dtmf_input_box_index] = 0;             // NULL term the string
 
-		#if 0
-			// append our DTMF ID to the inputted DTMF code -
-			//  IF the user inputted code is exactly 3 digits long
-			if (g_dtmf_input_box_index == 3)
-				g_dtmf_call_mode = DTMF_CheckGroupCall(g_dtmf_input_box, 3);
-			else
-				g_dtmf_call_mode = DTMF_CALL_MODE_DTMF;
-		#else
-			// append our DTMF ID to the inputted DTMF code -
-			//  IF the user inputted code is exactly 3 digits long and D-DCD is enabled
-			if (g_dtmf_input_box_index == 3 && g_tx_vfo->dtmf_decoding_enable > 0)
-				g_dtmf_call_mode = DTMF_CheckGroupCall(g_dtmf_input_box, 3);
-			else
-				g_dtmf_call_mode = DTMF_CALL_MODE_DTMF;
+		// append our DTMF ID to the inputted DTMF code -
+		#ifdef ENABLE_DTMF_CALLING
+			#if 0
+				// QS
+				if (g_dtmf_input_box_index == 3)
+					g_dtmf_call_mode = DTMF_CheckGroupCall(g_dtmf_input_box, 3);
+				else
+					g_dtmf_call_mode = DTMF_CALL_MODE_DTMF;
+			#else
+				// 1of11
+				if (g_dtmf_input_box_index == 3 && g_dtmf_input_box[0] != '*' && g_dtmf_input_box[0] != '#')
+					g_dtmf_call_mode = DTMF_CheckGroupCall(g_dtmf_input_box, 3);
+				else
+					g_dtmf_call_mode = DTMF_CALL_MODE_DTMF;
+			#endif
 		#endif
 
 		// remember the DTMF string
 		g_dtmf_prev_index = g_dtmf_input_box_index;
 		strcpy(g_dtmf_string, g_dtmf_input_box);
 
-		g_dtmf_reply_state = DTMF_REPLY_ANI;
-		g_dtmf_state       = DTMF_STATE_0;
+		#ifdef ENABLE_DTMF_CALLING
+			g_dtmf_reply_state = DTMF_REPLY_ANI;
+			g_dtmf_state       = DTMF_STATE_0;
+		#else
+			g_dtmf_reply_state = DTMF_REPLY_STR;	// just send the straight string
+		#endif
+
+		#if defined(ENABLE_UART) && defined(ENABLE_UART_DEBUG)
+//			UART_printf("generic ptt tx %s\r\n", g_dtmf_string);
+		#endif
 	}
 
 	DTMF_clear_input_box();

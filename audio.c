@@ -34,6 +34,7 @@
 #endif
 #include "functions.h"
 #include "misc.h"
+#include "radio.h"
 #include "settings.h"
 #include "ui/ui.h"
 
@@ -76,28 +77,27 @@
 
 beep_type_t g_beep_to_play = BEEP_NONE;
 
-void AUDIO_set_mod_mode(const unsigned int mode)
+void AUDIO_set_mod_mode(const mod_mode_t mode)
 {
 	BK4819_af_type_t af_mode;
 	switch (mode)
-	{			
+	{
 		default:
-		case 0: af_mode = BK4819_AF_FM; break;
-		case 1: af_mode = BK4819_AF_AM; break;
-		case 2: af_mode = BK4819_AF_BASEBAND1; break;
-		case 3: af_mode = BK4819_AF_BASEBAND2; break;
+		case MOD_MODE_FM:  af_mode = BK4819_AF_FM;        break;
+		case MOD_MODE_AM:  af_mode = BK4819_AF_AM;        break;
+		case MOD_MODE_DSB: af_mode = BK4819_AF_BASEBAND1; break;
 	}
 	BK4819_SetAF(af_mode);
 }
 
 void AUDIO_PlayBeep(beep_type_t Beep)
 {
-	const uint16_t tone_val = BK4819_ReadRegister(0x71);
-//	const uint16_t af_val   = BK4819_ReadRegister(0x47);
+	const uint16_t tone_val = BK4819_read_reg(0x71);
+//	const uint16_t af_val   = BK4819_read_reg(0x47);
 	uint16_t       ToneFrequency;
 	uint16_t       Duration;
 
-	if (!g_eeprom.beep_control)
+	if (g_eeprom.config.setting.beep_control == 0)
 	{	// beep not enabled
 		if (Beep != BEEP_880HZ_60MS_TRIPLE_BEEP &&
 			Beep != BEEP_500HZ_60MS_DOUBLE_BEEP &&
@@ -172,8 +172,7 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 			break;
 	}
 
-//	BK4819_PlayTone(ToneFrequency, true);
-	BK4819_StartTone1(ToneFrequency, 96, true);
+	BK4819_start_tone(ToneFrequency, 10, false, true);
 
 	SYSTEM_DelayMs(2);
 	GPIO_SetBit(&GPIOC->DATA, GPIOC_PIN_SPEAKER);
@@ -237,7 +236,7 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 	BK4819_TurnsOffTones_TurnsOnRX();
 	SYSTEM_DelayMs(2);
 
-	BK4819_WriteRegister(0x71, tone_val);
+	BK4819_write_reg(0x71, tone_val);
 
 	#ifdef ENABLE_FMRADIO
 		if (g_fm_radio_mode)
@@ -261,7 +260,7 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 	{
 		unsigned int i;
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF)
 			return;
 
 		GPIO_SetBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
@@ -274,12 +273,12 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 				GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_1);
 			else
 				GPIO_SetBit(&GPIOA->DATA, GPIOA_PIN_VOICE_1);
-			SYSTICK_DelayUs(1000);
+			SYSTICK_Delay250us(4000);
 			GPIO_SetBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
-			SYSTICK_DelayUs(1200);
+			SYSTICK_Delay250us(4800);
 			GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 			VoiceID <<= 1;
-			SYSTICK_DelayUs(200);
+			SYSTICK_Delay250us(800);
 		}
 	}
 
@@ -288,10 +287,10 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 		uint8_t Delay;
 		uint8_t VoiceID = g_voice_id[0];
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF || g_voice_write_index == 0)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF || g_voice_write_index == 0)
 			goto Bailout;
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_CHINESE)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_CHINESE)
 		{	// Chinese
 			if (VoiceID >= ARRAY_SIZE(VoiceClipLengthChinese))
 				goto Bailout;
@@ -338,7 +337,7 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 			SYSTEM_DelayMs(Delay * 10);
 
 			if (g_current_function == FUNCTION_RECEIVE)
-				AUDIO_set_mod_mode(g_rx_vfo->am_mode);
+				AUDIO_set_mod_mode(g_rx_vfo->channel.mod_mode);
 			
 			#ifdef ENABLE_FMRADIO
 				if (g_fm_radio_mode)
@@ -371,13 +370,13 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 
 	void AUDIO_SetVoiceID(uint8_t Index, voice_id_t VoiceID)
 	{
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF || Index == 0)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF || Index == 0)
 		{
 			g_voice_write_index = 0;
 			g_voice_read_index  = 0;
 		}
 
-		if (g_eeprom.voice_prompt != VOICE_PROMPT_OFF && Index < ARRAY_SIZE(g_voice_id))
+		if (g_eeprom.config.setting.voice_prompt != VOICE_PROMPT_OFF && Index < ARRAY_SIZE(g_voice_id))
 		{
 			g_voice_id[Index] = VoiceID;
 			g_voice_write_index++;
@@ -390,13 +389,13 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 		uint8_t  Result;
 		uint8_t  Count;
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF || Index == 0)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF || Index == 0)
 		{
 			g_voice_write_index = 0;
 			g_voice_read_index  = 0;
 		}
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF)
 			return 0;
 
 		Count     = 0;
@@ -431,17 +430,17 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 		uint8_t Delay;
 		bool    Skip = false;
 
-		if (g_eeprom.voice_prompt == VOICE_PROMPT_OFF)
+		if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_OFF)
 		{
 			g_voice_write_index = 0;
 			g_voice_read_index  = 0;
 			return;
 		}
 
-		if (g_voice_read_index != g_voice_write_index && g_eeprom.voice_prompt != VOICE_PROMPT_OFF)
+		if (g_voice_read_index != g_voice_write_index && g_eeprom.config.setting.voice_prompt != VOICE_PROMPT_OFF)
 		{
 			VoiceID = g_voice_id[g_voice_read_index];
-			if (g_eeprom.voice_prompt == VOICE_PROMPT_CHINESE)
+			if (g_eeprom.config.setting.voice_prompt == VOICE_PROMPT_CHINESE)
 			{
 				if (VoiceID < ARRAY_SIZE(VoiceClipLengthChinese))
 				{
@@ -486,7 +485,7 @@ void AUDIO_PlayBeep(beep_type_t Beep)
 		// unmute the radios audio
 
 		if (g_current_function == FUNCTION_RECEIVE)
-			AUDIO_set_mod_mode(g_rx_vfo->am_mode);
+			AUDIO_set_mod_mode(g_rx_vfo->channel.mod_mode);
 		
 		#ifdef ENABLE_FMRADIO
 			if (g_fm_radio_mode)

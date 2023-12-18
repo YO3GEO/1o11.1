@@ -58,7 +58,10 @@ void SystickHandler(void)
 		g_next_time_slice_500ms = true;
 		
 		DECREMENT_AND_TRIGGER(g_tx_timer_tick_500ms, g_tx_timeout_reached);
-		DECREMENT(g_serial_config_tick_500ms);
+
+		#if defined(ENABLE_UART)
+			DECREMENT(g_serial_config_tick_500ms);
+		#endif
 	}
 
 	if ((g_global_sys_tick_counter & 3) == 0)
@@ -73,12 +76,12 @@ void SystickHandler(void)
 	DECREMENT(g_found_ctcss_tick_10ms);
 
 	if (g_current_function == FUNCTION_FOREGROUND)
-		DECREMENT_AND_TRIGGER(g_schedule_power_save_tick_10ms, g_schedule_power_save);
+		DECREMENT_AND_TRIGGER(g_power_save_pause_tick_10ms, g_power_save_pause_done);
 
 	if (g_current_function == FUNCTION_POWER_SAVE)
 		DECREMENT_AND_TRIGGER(g_power_save_tick_10ms, g_power_save_expired);
 
-	if (g_eeprom.dual_watch != DUAL_WATCH_OFF &&
+	if (g_eeprom.config.setting.dual_watch != DUAL_WATCH_OFF &&
 	    g_scan_state_dir == SCAN_STATE_DIR_OFF &&
 	    g_css_scan_mode == CSS_SCAN_MODE_OFF)
 	{
@@ -89,8 +92,8 @@ void SystickHandler(void)
 	#ifdef ENABLE_NOAA
 		if (g_scan_state_dir == SCAN_STATE_DIR_OFF &&
 		    g_css_scan_mode == CSS_SCAN_MODE_OFF &&
-		    g_eeprom.dual_watch == DUAL_WATCH_OFF &&
-		    g_is_noaa_mode &&
+		    g_eeprom.config.setting.dual_watch == DUAL_WATCH_OFF &&
+		    g_noaa_mode &&
 		   !g_monitor_enabled &&
 		    g_current_function != FUNCTION_TRANSMIT)
 		{
@@ -101,7 +104,7 @@ void SystickHandler(void)
 
 	if (g_scan_state_dir != SCAN_STATE_DIR_OFF || g_css_scan_mode == CSS_SCAN_MODE_SCANNING)
 		if (!g_monitor_enabled && g_current_function != FUNCTION_TRANSMIT)
-			DECREMENT(g_scan_pause_tick_10ms);
+			DECREMENT(g_scan_tick_10ms);
 
 	DECREMENT_AND_TRIGGER(g_tail_tone_elimination_tick_10ms, g_flag_tail_tone_elimination_complete);
 

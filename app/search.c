@@ -91,7 +91,7 @@ static void SEARCH_Key_DIGITS(key_code_t Key, bool key_pressed, bool key_held)
 			#ifdef ENABLE_VOICE
 				g_another_voice_id = (voice_id_t)Key;
 			#endif
-			g_search_show_chan_prefix = RADIO_CheckValidChannel(Channel, false, 0);
+			g_search_show_chan_prefix = RADIO_channel_valid(Channel, false, 0);
 			g_search_channel    = (uint8_t)Channel;
 			return;
 		}
@@ -112,7 +112,7 @@ static void SEARCH_Key_EXIT(bool key_pressed, bool key_held)
 	switch (g_search_edit_state)
 	{
 		case SEARCH_EDIT_STATE_NONE:
-			g_eeprom.cross_vfo_rx_tx = g_backup_cross_vfo_rx_tx;
+			g_eeprom.config.setting.cross_vfo = g_backup_cross_vfo;
 			g_update_status          = true;
 			g_vfo_configure_mode     = VFO_CONFIGURE_RELOAD;
 			g_flag_reset_vfos        = true;
@@ -184,7 +184,7 @@ static void SEARCH_Key_MENU(bool key_pressed, bool key_held)
 				// determine what the current step size is for the detected frequency
 				// use the 7 VFO channels/bands to determine it
 				const unsigned int band = (unsigned int)FREQUENCY_GetBand(g_search_frequency);
-				g_search_step_setting = BOARD_fetchFrequencyStepSetting(band, g_eeprom.tx_vfo);
+				g_search_step_setting = SETTINGS_fetch_frequency_step_setting(band, g_eeprom.config.setting.tx_vfo_num);
 				{	// round to nearest step size
 					const uint16_t step_size = STEP_FREQ_TABLE[g_search_step_setting];
 					g_search_frequency = ((g_search_frequency + (step_size / 2)) / step_size) * step_size;
@@ -194,7 +194,7 @@ static void SEARCH_Key_MENU(bool key_pressed, bool key_held)
 			if (g_tx_vfo->channel_save <= USER_CHANNEL_LAST)
 			{	// save to channel
 				g_search_channel = g_tx_vfo->channel_save;
-				g_search_show_chan_prefix = RADIO_CheckValidChannel(g_tx_vfo->channel_save, false, 0);
+				g_search_show_chan_prefix = RADIO_channel_valid(g_tx_vfo->channel_save, false, 0);
 				g_search_edit_state = SEARCH_EDIT_STATE_SAVE_CHAN;
 			}
 			else
@@ -251,7 +251,7 @@ static void SEARCH_Key_MENU(bool key_pressed, bool key_held)
 				}
 
 				g_tx_vfo->freq_config_tx = g_tx_vfo->freq_config_rx;
-				g_tx_vfo->step_setting   = g_search_step_setting;
+				g_tx_vfo->channel.step_setting = g_search_step_setting;
 			}
 			else
 			{
@@ -268,16 +268,16 @@ static void SEARCH_Key_MENU(bool key_pressed, bool key_held)
 			if (g_tx_vfo->channel_save <= USER_CHANNEL_LAST)
 			{
 				Channel = g_search_channel;
-				g_eeprom.user_channel[g_eeprom.tx_vfo] = Channel;
+				g_eeprom.config.setting.indices.vfo[g_eeprom.config.setting.tx_vfo_num].user = Channel;
 			}
 			else
 			{
-				Channel = FREQ_CHANNEL_FIRST + g_tx_vfo->band;
-				g_eeprom.freq_channel[g_eeprom.tx_vfo] = Channel;
+				Channel = FREQ_CHANNEL_FIRST + g_tx_vfo->channel_attributes.band;
+				g_eeprom.config.setting.indices.vfo[g_eeprom.config.setting.tx_vfo_num].frequency = Channel;
 			}
 
 			g_tx_vfo->channel_save = Channel;
-			g_eeprom.screen_channel[g_eeprom.tx_vfo] = Channel;
+			g_eeprom.config.setting.indices.vfo[g_eeprom.config.setting.tx_vfo_num].screen = Channel;
 			g_request_save_channel = 2;
 
 			#ifdef ENABLE_VOICE
@@ -336,7 +336,7 @@ static void SEARCH_Key_UP_DOWN(bool key_pressed, bool pKeyHeld, int8_t Direction
 	if (g_search_edit_state == SEARCH_EDIT_STATE_SAVE_CHAN)
 	{
 		g_search_channel          = NUMBER_AddWithWraparound(g_search_channel, Direction, 0, USER_CHANNEL_LAST);
-		g_search_show_chan_prefix = RADIO_CheckValidChannel(g_search_channel, false, 0);
+		g_search_show_chan_prefix = RADIO_channel_valid(g_search_channel, false, 0);
 		g_request_display_screen  = DISPLAY_SEARCH;
 	}
 	else
@@ -605,13 +605,13 @@ void SEARCH_Start(void)
 			g_rx_vfo->channel_save = FREQ_CHANNEL_FIRST + BAND6_400MHz;
 	#endif
 
-	BackupStep     = g_rx_vfo->step_setting;
+	BackupStep     = g_rx_vfo->channel.step_setting;
 	BackupStepFreq = g_rx_vfo->step_freq;
 
 	RADIO_InitInfo(g_rx_vfo, g_rx_vfo->channel_save, g_rx_vfo->p_rx->frequency);
 
-	g_rx_vfo->step_setting = BackupStep;
-	g_rx_vfo->step_freq    = BackupStepFreq;
+	g_rx_vfo->channel.step_setting = BackupStep;
+	g_rx_vfo->step_freq            = BackupStepFreq;
 
 	g_monitor_enabled = false;
 	GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_SPEAKER);
@@ -619,14 +619,14 @@ void SEARCH_Start(void)
 	RADIO_setup_registers(true);
 
 	#ifdef ENABLE_NOAA
-		g_is_noaa_mode = false;
+		g_noaa_mode = false;
 	#endif
 
 	if (g_search_single_frequency)
 	{
 		g_search_css_state    = SEARCH_CSS_STATE_SCANNING;
 		g_search_frequency    = g_rx_vfo->p_rx->frequency;
-		g_search_step_setting = g_rx_vfo->step_setting;
+		g_search_step_setting = g_rx_vfo->channel.step_setting;
 
 		BK4819_set_rf_filter_path(g_search_frequency);
 
@@ -637,20 +637,25 @@ void SEARCH_Start(void)
 		g_search_css_state = SEARCH_CSS_STATE_OFF;
 		g_search_frequency = 0xFFFFFFFF;
 
-#if 1
-		// this is why it needs such a strong signal
-		BK4819_set_rf_filter_path(0xFFFFFFFF);  // disable the LNA filter paths - why it needs a strong signal
-#else
+#ifdef ENABLE_FREQ_SEARCH_LNA
+		// 1of11
+		// still requires strong signal >= -40dBm at LNA input, but MUCH more sensitive that QS way
 		BK4819_set_rf_filter_path(g_rx_vfo->p_rx->frequency);  // lets have a play !
+#else
+		// QS
+		// this is why it needs such a strong signal
+		BK4819_set_rf_filter_path(0xFFFFFFFF);  // disable the LNA filter paths
 #endif
 
 		BK4819_EnableFrequencyScan();
 	}
 
-	DTMF_clear_RX();
+	#ifdef ENABLE_DTMF_CALLING
+		DTMF_clear_RX();
+	#endif
 
 	#ifdef ENABLE_VOX
-		g_vox_lost              = false;
+		g_vox_lost = false;
 	#endif
 
 	g_cxcss_tail_found          = false;

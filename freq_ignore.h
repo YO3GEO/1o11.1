@@ -1,4 +1,4 @@
-/* Copyright 2023 Dual Tachyon
+/* Copyright 2023 One of Eleven
  * https://github.com/DualTachyon
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +14,18 @@
  *     limitations under the License.
  */
 
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef FREQ_IGNORE_H
+#define FREQ_IGNORE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-void         BOARD_FLASH_Init(void);
-void         BOARD_GPIO_Init(void);
-void         BOARD_PORTCON_Init(void);
-void         BOARD_ADC_Init(void);
-void         BOARD_ADC_GetBatteryInfo(uint16_t *pVoltage, uint16_t *pCurrent);
+#ifdef ENABLE_SCAN_IGNORE_LIST
+	void FI_clear_freq_ignored(void);
+	int  FI_freq_ignored(const uint32_t frequency);
+	bool FI_add_freq_ignored(const uint32_t frequency);
+	void FI_sub_freq_ignored(const uint32_t frequency);
+#endif
 
 #endif
 

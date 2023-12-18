@@ -128,11 +128,7 @@ void BK1080_Init(const uint16_t frequency, const bool initialise)
 		
 				if (BK1080_freq_lower > lower)
 					BK1080_freq_lower = lower;
-//				if (BK1080_freq_lower > upper)
-//					BK1080_freq_lower = upper;
-		
-//				if (BK1080_freq_upper < lower)
-//					BK1080_freq_upper = lower;
+
 				if (BK1080_freq_upper < upper)
 					BK1080_freq_upper = upper;
 			}
@@ -183,18 +179,18 @@ void BK1080_Init(const uint16_t frequency, const bool initialise)
 	}
 }
 
-uint16_t BK1080_ReadRegister(BK1080_Register_t Register)
+uint16_t BK1080_ReadRegister(BK1080_register_t Register)
 {
 	uint8_t Value[2];
 	I2C_Start();
 	I2C_Write(0x80);
 	I2C_Write((Register << 1) | I2C_READ);
-	I2C_ReadBuffer(Value, sizeof(Value));
+	I2C_ReadBuffer(Value, sizeof(Value), false);
 	I2C_Stop();
 	return (Value[0] << 8) | Value[1];
 }
 
-void BK1080_WriteRegister(BK1080_Register_t Register, uint16_t Value)
+void BK1080_WriteRegister(BK1080_register_t Register, uint16_t Value)
 {
 	I2C_Start();
 	I2C_Write(0x80);
@@ -239,7 +235,7 @@ void BK1080_SetFrequency(uint16_t Frequency)
 	BK1080_WriteRegister(BK1080_REG_05_SYSTEM_CONFIGURATION2, (SEEK_THRESHOLD << 8) | (band << 6) | (CHAN_SPACING << 4) | (VOLUME << 0));
 
 	BK1080_WriteRegister(BK1080_REG_03_CHANNEL, (uint16_t)channel);
-	SYSTEM_DelayMs(1);
+//	SYSTEM_DelayMs(1);
 	BK1080_WriteRegister(BK1080_REG_03_CHANNEL, (uint16_t)channel | (1u << 15));
 }
 

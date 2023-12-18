@@ -24,11 +24,11 @@
 // the default AIRCOPY frequency
 uint32_t g_aircopy_freq = 41002500;
 
-const freq_band_table_t AIR_BAND = {10800000, 13600000};
+const freq_band_table_t AIR_BAND = {10800000, 13700000};
 
 // the BK4819 has 2 bands it covers, 18MHz ~ 630MHz and 760MHz ~ 1300MHz
-const freq_band_table_t BX4819_BAND1 = { 1500000,  63000000};
-const freq_band_table_t BX4819_BAND2 = {76000000, 185000000};
+const freq_band_table_t BX4819_BAND1 = { 1800000,  63000000};
+const freq_band_table_t BX4819_BAND2 = {84000000, 130000000};
 
 const freq_band_table_t FREQ_BAND_TABLE[7] =
 {
@@ -56,25 +56,25 @@ const freq_band_table_t FREQ_BAND_TABLE[7] =
 #ifdef ENABLE_NOAA
 	const uint32_t NOAA_FREQUENCY_TABLE[10] =
 	{
-		44600625,
-		44601875,
-		44603125,
-		44604375,
-		44605625,
-		44606875,
-		44608125,
-		44609375,
-		44610625,
-		44611875
+		16255000,
+		16240000,
+		16247500,
+		16242500,
+		16245000,
+		16250000,
+		16252500,
+		16152500,
+		16177500,
+		16327500
 	};
 #endif
 
 // the first 7 values MUST remain in those same positions
 // so as to remain compatible with the QS config software
 //
-const uint16_t STEP_FREQ_TABLE[21] = {
+const uint16_t STEP_FREQ_TABLE[16] = {
 	250, 500, 625, 1000, 1250, 2500, 833,
-	1, 5, 10, 25, 50, 100, 125, 1500, 3000, 5000, 10000, 12500, 25000, 50000
+	10, 25, 50, 100, 125, 1500, 3000, 5000, 10000
 };
 
 // the above step sizes will be sorted to appear to be in order to the user
@@ -136,68 +136,121 @@ frequency_band_t FREQUENCY_GetBand(uint32_t Frequency)
 //	return BAND_NONE;
 }
 
-uint8_t FREQUENCY_CalculateOutputPower(uint8_t TxpLow, uint8_t TxpMid, uint8_t TxpHigh, int32_t LowerLimit, int32_t Middle, int32_t UpperLimit, int32_t Frequency)
+unsigned int FREQUENCY_band_segment(const uint32_t freq)
 {
-	uint8_t pwr = TxpMid;
+	const unsigned int band  = (unsigned int)FREQUENCY_GetBand(freq);
+	const uint32_t     low_freq  = FREQ_BAND_TABLE[band].lower;
+	const uint32_t     high_freq = FREQ_BAND_TABLE[band].upper;
+	const uint32_t     mid_freq  = (low_freq + high_freq) / 2;
 
-	if (Frequency <= LowerLimit)
-		return TxpLow;
+	if (freq <  ((low_freq +  mid_freq) / 2))
+		return 0;
+	if (freq >= ((mid_freq + high_freq) / 2))
+		return 2;
+	return 1;
+}
 
-	if (Frequency >= UpperLimit)
-		return TxpHigh;
+uint8_t FREQUENCY_CalculateOutputPower(const int16_t low_tx_pwr, const int32_t mid_tx_pwr, const int16_t high_tx_pwr, const uint32_t freq)
+{
+	const unsigned int band      = (unsigned int)FREQUENCY_GetBand(freq);
+	const uint32_t     low_freq  = FREQ_BAND_TABLE[band].lower;
+	const uint32_t     high_freq = FREQ_BAND_TABLE[band].upper;
+	const uint32_t     mid_freq  = (low_freq + high_freq) / 2;
+
+	int16_t value;
+
+	if (freq <= low_freq)
+		return low_tx_pwr;
+
+	if (freq >= high_freq)
+		return high_tx_pwr;
 
 	// linear interpolation
-	if (Frequency <= Middle)
-		pwr += ((TxpMid  - TxpLow) * (Frequency - LowerLimit)) / (Middle - LowerLimit);
+	if (freq < mid_freq)
+		value = low_tx_pwr + (((mid_tx_pwr  - low_tx_pwr) * (freq - low_freq)) / (mid_freq  - low_freq));
 	else
-		pwr += ((TxpHigh - TxpMid) * (Frequency - Middle))     / (UpperLimit - Middle);
-	return pwr;
+		value = mid_tx_pwr + (((high_tx_pwr - mid_tx_pwr) * (freq - mid_freq)) / (high_freq - mid_freq));
+
+	return (value < 0) ? 0 : (value > 255) ? 255 : value;
 }
 
 uint32_t FREQUENCY_floor_to_step(uint32_t freq, const uint32_t step_size, const uint32_t lower, const uint32_t upper)
 {
 	uint32_t delta;
 
+	if (upper > lower && upper != 0xffffffff)
+		if (freq > (upper - 1))
+			freq =  upper - 1;
+
 	if (freq <= lower)
 		return lower;
 
-	if (freq > (upper - 1))
-		freq =  upper - 1;
-
 	delta = freq - lower;
 
-	if (delta < step_size)
-		return lower;
-		
-	if (step_size == 833)
-	{
-		uint32_t           base  =  (delta / 2500) * 2500;	// 25kHz step
-		const unsigned int index = ((delta - base) % 2500) / step_size;
-
+	if (step_size == 833)  // 8.33 ~ 25/3
+	{	// long winded because 8.33 is not exactly 25/3
+		uint32_t base  =  (delta / 2500) * 2500;
+		uint32_t index = ((delta - base) % 2500) / step_size;
 		if (index == 2)
 			base++;
-
 		freq = lower + base + (step_size * index);
 	}
 	else
+	{
 		freq = lower + ((delta / step_size) * step_size);
-	
+	}
+
 	return freq;
 }
 
-uint32_t FREQUENCY_wrap_to_step_band(uint32_t freq, const uint32_t step_size, const unsigned int band)
-{
-	const uint32_t upper = FREQ_BAND_TABLE[band].upper; 
-	const uint32_t lower = FREQ_BAND_TABLE[band].lower; 
-	
-	if (freq < lower)
-		return FREQUENCY_floor_to_step(upper, step_size, lower, upper);
-	
-	if (freq >= upper)
-		freq = lower;
-	
-	return freq;
-}
+#ifdef ENABLE_SCAN_RANGES
+	const freq_scan_range_table_t FREQ_SCAN_RANGE_TABLE[] =
+	{
+		{ 2760125,  2760125 + (1000 * 40), 1000},
+		{ 2696500,  2696500 + (1000 * 80), 1000},
+		{ 2600000,  2800000, 1000},
+		{ 2800000,  2970000, 1000},
+		{ 5000000,  5200000, 1000},
+		{ 5000000,  5400000, 1000},
+		{ 7000000,  7050000, 1250},
+		{10800000, 11800000, 2500},
+//		{11800000, 13700000,  833},
+		{11800000, 13700000, 2500},
+		{14400000, 14600000, 1250},
+		{14400000, 14800000, 1250},
+		{15600000, 15800000, 2500},
+		{16200000, 17400000, 1250},
+		{21900000, 22500000, 1500},
+		{24000000, 39000000, 2500},
+		{43000000, 44000000, 1250},
+		{44600625, 44600625 + (1250 * 16), 1250},
+		{44000000, 47000000, 1250}
+	};
+
+	void FREQUENCY_scan_range(const uint32_t freq, uint32_t *lower, uint32_t *upper, uint32_t *step_size)
+	{
+		const frequency_band_t band = FREQUENCY_GetBand(freq);
+		unsigned int i;
+
+		for (i = 0; i < ARRAY_SIZE(FREQ_SCAN_RANGE_TABLE); i++)
+		{
+			const uint32_t _upper = FREQ_SCAN_RANGE_TABLE[i].upper;
+			const uint32_t _lower = FREQ_SCAN_RANGE_TABLE[i].lower;
+			if (freq >= _lower && freq < _upper)
+			{
+				if (upper)     *upper     = _upper;
+				if (lower)     *lower     = _lower;
+				if (step_size) *step_size = FREQ_SCAN_RANGE_TABLE[i].step_size;
+				return;
+			}
+		}
+
+		if (upper)     *upper     = FREQ_BAND_TABLE[band].upper;
+		if (lower)     *lower     = FREQ_BAND_TABLE[band].lower;
+//		if (step_size) *step_size = FREQ_BAND_TABLE[band].step_size;
+	}
+
+#endif
 
 int FREQUENCY_tx_freq_check(const uint32_t Frequency)
 {	// return '0' if TX frequency is allowed
@@ -210,26 +263,27 @@ int FREQUENCY_tx_freq_check(const uint32_t Frequency)
 		return -1;  // BX radio chip does not work in this range
 
 	if (Frequency >= AIR_BAND.lower && Frequency < AIR_BAND.upper)
-		return 0;  // TX not allowed in the airband
+		return -1;  // TX not allowed in the airband
 
 	if (Frequency < FREQ_BAND_TABLE[0].lower || Frequency > FREQ_BAND_TABLE[ARRAY_SIZE(FREQ_BAND_TABLE) - 1].upper)
 		return -1;  // TX not allowed outside this range
 
-	switch (g_setting_freq_lock)
+	switch (g_eeprom.config.setting.freq_lock)
 	{
+		default:
 		case FREQ_LOCK_NORMAL:
 			if (Frequency >= AIR_BAND.upper && Frequency < 17400000)
 				return 0;
 			if (Frequency >= 17400000 && Frequency < 35000000)
-				if (g_setting_174_tx_enable)
+				if (g_eeprom.config.setting.enable_tx_200)
 					return 0;
 			if (Frequency >= 35000000 && Frequency < 40000000)
-				if (g_setting_350_tx_enable && g_setting_350_enable)
+				if (g_eeprom.config.setting.enable_tx_350 && g_eeprom.config.setting.enable_350)
 					return 0;
 			if (Frequency >= 40000000 && Frequency < 47000000)
 				return 0;
 			if (Frequency >= 47000000 && Frequency <= 60000000)
-				if (g_setting_470_tx_enable)
+				if (g_eeprom.config.setting.enable_tx_470)
 					return 0;
 			break;
 
@@ -273,7 +327,7 @@ int FREQUENCY_tx_freq_check(const uint32_t Frequency)
 				return 0;
 			break;
 
-		#ifdef ENABLE_TX_UNLOCK
+		#ifdef ENABLE_TX_UNLOCK_MENU
 			case FREQ_LOCK_TX_UNLOCK:
 			{
 				unsigned int i;
