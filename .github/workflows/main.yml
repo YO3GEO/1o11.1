@@ -1,9 +1,9 @@
-name: 'release main'
+name: 'upstream'
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "upstream" ]
   pull_request:
-    branches: [ "main" ]    
+    branches: [ "upstream" ]    
  
   release:
     types:
