@@ -56,7 +56,7 @@ ENABLE_DTMF_KILL_REVIVE          := 0
 #
 ENABLE_SHOW_FREQ_IN_CHAN         := 1
 # small bold 580 B
-ENABLE_SMALL_BOLD                := 0
+ENABLE_SMALL_BOLD                := 1
 # smallest font 2 kB
 #ENABLE_SMALLEST_FONT            := 0
 # trim trailing 44 B
