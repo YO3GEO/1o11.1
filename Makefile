@@ -35,7 +35,7 @@ ENABLE_VOX                       := 1
 ENABLE_VOX_MORE_SENSITIVE        := 1
 # Tx Alarm 600 B
 ENABLE_ALARM                     := 0
-ENABLE_TX_TONE_HZ                := 1750
+ENABLE_TX_TONE_HZ                := 1050
 #
 # MDC1200 2.8 kB
 ENABLE_MDC1200                   := 0
@@ -47,9 +47,9 @@ ENABLE_RESET_AES_KEY             := 0
 ENABLE_BIG_FREQ                  := 0
 #
 # DTMF_CALLING 2.8 kB
-ENABLE_DTMF_CALLING              := 0
+ENABLE_DTMF_CALLING              := 1
 ENABLE_DTMF_LIVE_DECODER         := 0
-ENABLE_DTMF_TIMING_SETTINGS      := 0
+ENABLE_DTMF_TIMING_SETTINGS      := 1
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 0
 # Kill and Revive 400 B
 ENABLE_DTMF_KILL_REVIVE          := 0
@@ -62,20 +62,20 @@ ENABLE_SMALL_BOLD                := 1
 # trim trailing 44 B
 ENABLE_TRIM_TRAILING_ZEROS       := 0
 ENABLE_WIDE_RX                   := 1
-ENABLE_TX_WHEN_AM                := 0
+ENABLE_TX_WHEN_AM                := 1
 #
 # Frequency calibration 188 B
 ENABLE_F_CAL_MENU                := 0
 # FM DEV CAL 250 B
-ENABLE_FM_DEV_CAL_MENU           := 0
-ENABLE_TX_UNLOCK_MENU            := 0
+ENABLE_FM_DEV_CAL_MENU           := 1
+ENABLE_TX_UNLOCK_MENU            := 1
 #ENABLE_TX_POWER_CAL_MENU        := 0
 ENABLE_TX_POWER_FIX              := 1
 ENABLE_CTCSS_TAIL_PHASE_SHIFT    := 1
 ENABLE_CONTRAST                  := 0
 ENABLE_BOOT_BEEPS                := 0
 ENABLE_FLASH_LIGHT_SOS_TONE      := 0
-ENABLE_SHOW_CHARGE_LEVEL         := 0
+ENABLE_SHOW_CHARGE_LEVEL         := 1
 ENABLE_REVERSE_BAT_SYMBOL        := 0
 ENABLE_FREQ_SEARCH_LNA           := 1
 ENABLE_FREQ_SEARCH_TIMEOUT       := 0
@@ -92,7 +92,7 @@ ENABLE_SQ_OPEN_WITH_UP_DN_BUTTS  := 1
 ENABLE_FASTER_CHANNEL_SCAN       := 1
 ENABLE_COPY_CHAN_TO_VFO_TO_CHAN  := 1
 # Tx Audio Bar 300 B
-ENABLE_TX_AUDIO_BAR              := 0
+ENABLE_TX_AUDIO_BAR              := 1
 ENABLE_TX_AUDIO_BACKLIGHT        := 0
 # Side Button Menu 300 B
 ENABLE_SIDE_BUTT_MENU            := 0
