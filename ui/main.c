@@ -665,7 +665,7 @@ void UI_DisplayCenterLine(void)
 			}
 		#endif
 	}
-}
+//}
 
 const char *state_list[] = {"", "BUSY", "BAT LOW", "TX DISABLE", "TIMEOUT", "ALARM", "VOLT HIGH"};
 
