@@ -640,7 +640,7 @@ void UI_DisplayCenterLine(void)
 				}
 			#endif
 		#endif
-
+}//test
 		#ifdef ENABLE_SHOW_CHARGE_LEVEL
 			else
 			if (g_charging_with_type_c)
