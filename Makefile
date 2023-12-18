@@ -39,8 +39,8 @@ ENABLE_TX_TONE_HZ                := 1050
 #
 # MDC1200 2.8 kB
 ENABLE_MDC1200                   := 0
-ENABLE_MDC1200_SHOW_OP_ARG       := 1
-ENABLE_MDC1200_SIDE_BEEP         := 1
+ENABLE_MDC1200_SHOW_OP_ARG       := 0
+ENABLE_MDC1200_SIDE_BEEP         := 0
 #
 ENABLE_PWRON_PASSWORD            := 0
 ENABLE_RESET_AES_KEY             := 0
@@ -48,7 +48,7 @@ ENABLE_BIG_FREQ                  := 0
 #
 # DTMF_CALLING 2.8 kB
 ENABLE_DTMF_CALLING              := 1
-ENABLE_DTMF_LIVE_DECODER         := 0
+ENABLE_DTMF_LIVE_DECODER         := 1
 ENABLE_DTMF_TIMING_SETTINGS      := 1
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 0
 # Kill and Revive 400 B
@@ -67,10 +67,10 @@ ENABLE_TX_WHEN_AM                := 1
 # Frequency calibration 188 B
 ENABLE_F_CAL_MENU                := 0
 # FM DEV CAL 250 B
-ENABLE_FM_DEV_CAL_MENU           := 1
+ENABLE_FM_DEV_CAL_MENU           := 0
 ENABLE_TX_UNLOCK_MENU            := 1
 #ENABLE_TX_POWER_CAL_MENU        := 0
-ENABLE_TX_POWER_FIX              := 1
+ENABLE_TX_POWER_FIX              := 0
 ENABLE_CTCSS_TAIL_PHASE_SHIFT    := 1
 ENABLE_CONTRAST                  := 0
 ENABLE_BOOT_BEEPS                := 0
@@ -93,13 +93,13 @@ ENABLE_FASTER_CHANNEL_SCAN       := 1
 ENABLE_COPY_CHAN_TO_VFO_TO_CHAN  := 1
 # Tx Audio Bar 300 B
 ENABLE_TX_AUDIO_BAR              := 1
-ENABLE_TX_AUDIO_BACKLIGHT        := 0
+ENABLE_TX_AUDIO_BACKLIGHT        := 1
 # Side Button Menu 300 B
 ENABLE_SIDE_BUTT_MENU            := 0
 # Key Lock 400 B
 ENABLE_KEYLOCK                   := 0
 # panadapter 1.5kB
-ENABLE_PANADAPTER                := 1
+ENABLE_PANADAPTER                := 0
 ENABLE_PANADAPTER_PEAK_FREQ      := 0
 # single VFO 1.5kB
 ENABLE_SINGLE_VFO_CHAN           := 1
