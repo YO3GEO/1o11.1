@@ -41,9 +41,6 @@ jobs:
 
     - name: size
       run:  arm-none-eabi-size firmware
-
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v4.0.0
       
     - name: rename
       run: mv firmware.packed.bin firmware_packed${{ github.event.release.tag_name }}.bin
