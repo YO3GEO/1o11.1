@@ -15,7 +15,7 @@ ENABLE_UART_DEBUG                := 0
 #
 # AirCopy 2.5 kB
 ENABLE_AIRCOPY                   := 0
-ENABLE_AIRCOPY_REMEMBER_FREQ     := 1
+ENABLE_AIRCOPY_REMEMBER_FREQ     := 0
 ENABLE_AIRCOPY_RX_REBOOT         := 0
 #
 # FM Radio 4.2 kB
@@ -31,8 +31,8 @@ ENABLE_NOAA                      := 0
 ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 # Tx on Voice 1.0 kB
-ENABLE_VOX                       := 1
-ENABLE_VOX_MORE_SENSITIVE        := 1
+ENABLE_VOX                       := 0
+ENABLE_VOX_MORE_SENSITIVE        := 0
 # Tx Alarm 600 B
 ENABLE_ALARM                     := 0
 ENABLE_TX_TONE_HZ                := 1050
@@ -49,7 +49,7 @@ ENABLE_BIG_FREQ                  := 0
 # DTMF_CALLING 2.8 kB
 ENABLE_DTMF_CALLING              := 1
 ENABLE_DTMF_LIVE_DECODER         := 1
-ENABLE_DTMF_TIMING_SETTINGS      := 1
+ENABLE_DTMF_TIMING_SETTINGS      := 0
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 0
 # Kill and Revive 400 B
 ENABLE_DTMF_KILL_REVIVE          := 0
@@ -102,7 +102,7 @@ ENABLE_KEYLOCK                   := 0
 ENABLE_PANADAPTER                := 0
 ENABLE_PANADAPTER_PEAK_FREQ      := 0
 # single VFO 1.5kB
-ENABLE_SINGLE_VFO_CHAN           := 1
+ENABLE_SINGLE_VFO_CHAN           := 0
 
 #############################################################
 
