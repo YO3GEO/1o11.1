@@ -34,7 +34,7 @@ ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 ENABLE_VOX                       := 1
 ENABLE_VOX_MORE_SENSITIVE        := 1
 # Tx Alarm 600 B
-ENABLE_ALARM                     := 1
+ENABLE_ALARM                     := 0
 ENABLE_TX_TONE_HZ                := 1050
 #
 # MDC1200 2.8 kB
