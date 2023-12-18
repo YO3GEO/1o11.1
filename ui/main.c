@@ -638,21 +638,23 @@ void UI_DisplayCenterLine(void)
 					strcat(str, g_dtmf_rx + idx);
 					UI_PrintStringSmall(str, 2, 0, line);
 				}
-			//#endif
+			#endif
 		#endif
-
+	} //fix
 		#ifdef ENABLE_SHOW_CHARGE_LEVEL
 			else
 			if (g_charging_with_type_c)
 			{	// show the battery charge state
-				if (
-					#ifdef ENABLE_DTMF_CALLING
-						g_dtmf_call_state != DTMF_CALL_STATE_NONE ||
-					#endif
-					g_current_display_screen != DISPLAY_MAIN)
-				{
+				if 
+				//
+					//#ifdef ENABLE_DTMF_CALLING
+					//	
+					//#endif
+					(g_current_display_screen != DISPLAY_MAIN || g_dtmf_call_state != DTMF_CALL_STATE_NONE)
+				 // 
+				//{
 					return;
-				}
+				//}
 
 				g_center_line = CENTER_LINE_CHARGE_DATA;
 
