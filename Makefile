@@ -34,7 +34,7 @@ ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 ENABLE_VOX                       := 1
 ENABLE_VOX_MORE_SENSITIVE        := 1
 # Tx Alarm 600 B
-ENABLE_ALARM                     := 0
+ENABLE_ALARM                     := 1
 ENABLE_TX_TONE_HZ                := 1050
 #
 # MDC1200 2.8 kB
@@ -49,7 +49,7 @@ ENABLE_BIG_FREQ                  := 0
 # DTMF_CALLING 2.8 kB
 ENABLE_DTMF_CALLING              := 1
 ENABLE_DTMF_LIVE_DECODER         := 1
-ENABLE_DTMF_TIMING_SETTINGS      := 0
+ENABLE_DTMF_TIMING_SETTINGS      := 1
 ENABLE_DTMF_CALL_FLASH_LIGHT     := 0
 # Kill and Revive 400 B
 ENABLE_DTMF_KILL_REVIVE          := 0
@@ -93,9 +93,9 @@ ENABLE_FASTER_CHANNEL_SCAN       := 1
 ENABLE_COPY_CHAN_TO_VFO_TO_CHAN  := 1
 # Tx Audio Bar 300 B
 ENABLE_TX_AUDIO_BAR              := 1
-ENABLE_TX_AUDIO_BACKLIGHT        := 1
+ENABLE_TX_AUDIO_BACKLIGHT        := 0
 # Side Button Menu 300 B
-ENABLE_SIDE_BUTT_MENU            := 0
+ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 400 B
 ENABLE_KEYLOCK                   := 0
 # panadapter 1.5kB
