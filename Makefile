@@ -31,8 +31,8 @@ ENABLE_NOAA                      := 0
 ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 # Tx on Voice 1.0 kB
-ENABLE_VOX                       := 0
-ENABLE_VOX_MORE_SENSITIVE        := 0
+ENABLE_VOX                       := 1
+ENABLE_VOX_MORE_SENSITIVE        := 1
 # Tx Alarm 600 B
 ENABLE_ALARM                     := 0
 ENABLE_TX_TONE_HZ                := 1050
@@ -67,7 +67,7 @@ ENABLE_TX_WHEN_AM                := 1
 # Frequency calibration 188 B
 ENABLE_F_CAL_MENU                := 0
 # FM DEV CAL 250 B
-ENABLE_FM_DEV_CAL_MENU           := 0
+ENABLE_FM_DEV_CAL_MENU           := 1
 ENABLE_TX_UNLOCK_MENU            := 1
 #ENABLE_TX_POWER_CAL_MENU        := 0
 ENABLE_TX_POWER_FIX              := 0
