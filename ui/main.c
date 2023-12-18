@@ -638,9 +638,9 @@ void UI_DisplayCenterLine(void)
 					strcat(str, g_dtmf_rx + idx);
 					UI_PrintStringSmall(str, 2, 0, line);
 				}
-			#endif
+			//#endif
 		#endif
-}//test
+
 		#ifdef ENABLE_SHOW_CHARGE_LEVEL
 			else
 			if (g_charging_with_type_c)
