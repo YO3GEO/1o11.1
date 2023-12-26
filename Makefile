@@ -12,7 +12,7 @@ ENABLE_OVERLAY                   := 0
 ENABLE_LTO                       := 1
 # UART Programming 2.9 kB
 ENABLE_UART                      := 1
-ENABLE_UART_DEBUG                := 1
+ENABLE_UART_DEBUG                := 0
 # AirCopy 2.5 kB
 ENABLE_AIRCOPY                   := 0
 ENABLE_AIRCOPY_REMEMBER_FREQ     := 1
@@ -43,7 +43,7 @@ ENABLE_BIG_FREQ                  := 0
 # smaa bolf 580 B
 ENABLE_SMALL_BOLD                := 1
 # smallest font 2 kB
-ENABLE_SMALLEST_FONT             := 1
+ENABLE_SMALLEST_FONT             := 0
 # trim trailing 44 B
 ENABLE_TRIM_TRAILING_ZEROS       := 0
 ENABLE_KEEP_MEM_NAME             := 1
