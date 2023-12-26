@@ -81,8 +81,8 @@ ENABLE_TX_AUDIO_BAR              := 1
 ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 400 B
 ENABLE_KEYLOCK                   := 0
-ENABLE_PANADAPTER               := 1
-ENABLE_SINGLE_VFO_CHAN          := 1
+#ENABLE_PANADAPTER               := 1
+#ENABLE_SINGLE_VFO_CHAN          := 1
 
 #############################################################
 
