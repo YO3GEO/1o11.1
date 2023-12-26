@@ -46,7 +46,7 @@ const t_menu_item g_menu_list[] =
 {
 //   text,     voice ID,                               menu ID
 
-	{"PULA",    VOICE_ID_SQUELCH,                       MENU_SQL                   },
+	{"SQL",    VOICE_ID_SQUELCH,                       MENU_SQL                   },
 	{"CH SQL", VOICE_ID_SQUELCH,                       MENU_CHAN_SQL              },
 	{"STEP",   VOICE_ID_FREQUENCY_STEP,                MENU_STEP                  },
 	{"W/N",    VOICE_ID_CHANNEL_BANDWIDTH,             MENU_BANDWIDTH             },
