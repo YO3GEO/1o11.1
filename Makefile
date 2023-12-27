@@ -24,7 +24,7 @@ ENABLE_FMRADIO_76_108            := 0
 ENABLE_FMRADIO_875_108           := 1
 ENABLE_FMRADIO_64_108            := 0
 # NOAA 1.2 kB
-ENABLE_NOAA                      := 0
+ENABLE_NOAA                      := 1
 # Voice 1.7 kB
 ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
