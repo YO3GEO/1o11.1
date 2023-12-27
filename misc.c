@@ -55,7 +55,7 @@ const uint16_t        search_10ms                      =    210 / 10;   // 210ms
 #ifdef ENABLE_VOX
 	const uint16_t    dual_watch_delay_after_vox_10ms  =    200 / 10;   // 200ms
 #endif
-const uint16_t        dual_watch_delay_after_tx_10ms   =   1000 / 10;   // 7 sec after TX ends7000la1000
+const uint16_t        dual_watch_delay_after_tx_10ms   =   500 / 10;   // 7 sec after TX ends7000 la 500
 const uint16_t        dual_watch_delay_noaa_10ms       =     70 / 10;   // 70ms
 const uint16_t        dual_watch_delay_toggle_10ms     =    100 / 10;   // 100ms between VFO toggles
 
