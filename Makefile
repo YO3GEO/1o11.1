@@ -43,7 +43,7 @@ ENABLE_BIG_FREQ                  := 0
 # smaa bolf 580 B
 ENABLE_SMALL_BOLD                := 0
 # smallest font 2 kB
-ENABLE_SMALLEST_FONT             := 1
+ENABLE_SMALLEST_FONT             := 0
 # trim trailing 44 B
 ENABLE_TRIM_TRAILING_ZEROS       := 0
 ENABLE_KEEP_MEM_NAME             := 1
