@@ -30,7 +30,7 @@ ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
 # Tx on Voice 1.0 kB
 ENABLE_VOX                       := 1
-ENABLE_REDUCE_LOW_MID_TX_POWER   := 0
+ENABLE_REDUCE_LOW_MID_TX_POWER   := 1
 # Tx Alarm 600 B
 ENABLE_ALARM                     := 0
 ENABLE_TX1750                    := 1
