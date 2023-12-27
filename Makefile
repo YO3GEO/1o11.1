@@ -24,7 +24,7 @@ ENABLE_FMRADIO_76_108            := 0
 ENABLE_FMRADIO_875_108           := 1
 ENABLE_FMRADIO_64_108            := 0
 # NOAA 1.2 kB
-ENABLE_NOAA                      := 1
+ENABLE_NOAA                      := 0
 # Voice 1.7 kB
 ENABLE_VOICE                     := 0
 ENABLE_MUTE_RADIO_FOR_VOICE      := 0
@@ -81,7 +81,7 @@ ENABLE_TX_AUDIO_BAR              := 1
 ENABLE_SIDE_BUTT_MENU            := 1
 # Key Lock 400 B
 ENABLE_KEYLOCK                   := 0
-#ENABLE_PANADAPTER               := 1
+ENABLE_PANADAPTER               := 1
 #ENABLE_SINGLE_VFO_CHAN          := 1
 
 #############################################################
