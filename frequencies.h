@@ -79,7 +79,7 @@ extern const uint16_t STEP_FREQ_TABLE[21];
 extern uint16_t       step_freq_table_sorted[ARRAY_SIZE(STEP_FREQ_TABLE)];
 
 #ifdef ENABLE_NOAA
-	extern const uint32_t NOAA_FREQUENCY_TABLE[10];
+	extern const uint32_t NOAA_FREQUENCY_TABLE[11];
 #endif
 
 // ***********
